@@ -1,0 +1,10 @@
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\bin\Debug\CzkToAlb.exe.config
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\bin\Debug\CzkToAlb.exe
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\bin\Debug\CzkToAlb.pdb
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.csprojAssemblyReference.cache
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.Form1.resources
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.Properties.Resources.resources
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.csproj.GenerateResource.cache
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.csproj.CoreCompileInputs.cache
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.exe
+C:\Users\Alket\Desktop\CULS Master\Courses\Theoritical Foundations of Informatics\Project\CzkToAlb\CzkToAlb\obj\Debug\CzkToAlb.pdb
