@@ -1,47 +1,32 @@
-name: Nuclei Website Scan # Workflow name displayed in GitHub Actions
+name: Nuclei - Vulnerability Scan
 
 on:
-  schedule:
-    - cron: '0 0 * * *' # Run daily at midnight UTC (adjust cron schedule as needed)
-  workflow_dispatch: # Allow manual triggering of the workflow
+    schedule:
+      - cron: '0 0 * * *'
+    workflow_dispatch:
 
 jobs:
   nuclei-scan:
-    runs-on: ubuntu-latest # Runner environment (Ubuntu is a good choice)
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository (Optional)
-        uses: actions/checkout@v4 # Only needed if you need to access files from your repo
+      - uses: actions/checkout@v4
 
-      - name: Install Nuclei
-        run: |
-          sudo apt-get update
-          sudo apt-get install wget unzip -y
-          wget https://github.com/projectdiscovery/nuclei/releases/latest/download/nuclei_latest_linux_amd64.zip
-          unzip nuclei_latest_linux_amd64.zip
-          sudo mv nuclei /usr/local/bin/
-          nuclei -version # Verify installation
+      - name: Nuclei - Vulnerability Scan
+        id: nuclei_scan
+        uses: projectdiscovery/nuclei-action@main
+        with:
+          target: https:shabani.tech
 
-      - name: Run Nuclei Scan
-        run: |
-          WEBSITES="https://shabani.tech" # Replace with your list of websites (comma-separated)
-          echo "Scanning websites: $WEBSITES"
-          for website in $(echo $WEBSITES | tr ',' '\n'); do
-            echo "Scanning: $website"
-            nuclei -u $website -o nuclei-report-$website.txt # Run Nuclei and save output to a file
-          done
-
-      - name: Upload Scan Reports as Artifacts
+      - name: GitHub Workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei-scan-reports
-          path: nuclei-report-*.txt # Upload all nuclei report files
+          name: nuclei.log
+          path: nuclei.log
 
-      - name: Output Scan Summaries (Optional - for workflow logs)
-        run: |
-          echo "--- Nuclei Scan Summaries ---"
-          for report_file in nuclei-report-*.txt; do
-            echo "--- Report: $report_file ---"
-            cat $report_file
-            echo "-------------------------"
-          done
+      - name: GitHub Security Dashboard Alerts update
+        uses: github/codeql-action/upload-sarif@v3
+        if: steps.nuclei_scan.outputs.sarif_exists == 'true'
+        with:
+          sarif_file: nuclei.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
