@@ -1,9 +1,9 @@
 name: Nuclei - Vulnerability Scan
 
 on:
-    schedule:
-      - cron: '0 0 * * *'
-    workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # Runs daily at midnight
+  workflow_dispatch:  # Allows manual execution
 
 jobs:
   nuclei-scan:
@@ -11,22 +11,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Nuclei - Vulnerability Scan
-        id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@main
-        with:
-          target: https://juice-shop.herokuapp.com
+      - name: Install Nuclei
+        run: |
+          curl -fsSL https://install-projectdiscovery.io/nuclei | bash
+          nuclei -version
+          mkdir -p nuclei-results
 
-      - name: GitHub Workflow artifacts
+      - name: Run Nuclei Scan
+        run: |
+          nuclei -u https://juice-shop.herokuapp.com \
+            -t ~/.nuclei-templates \
+            -o nuclei-results/nuclei.log \
+            -json
+
+      - name: Convert JSON to SARIF (if needed)
+        run: |
+          jq '{ version: "2.1.0", runs: [{ tool: { driver: { name: "Nuclei", version: "latest" } }, results: [. | { message: { text: .info }, locations: [{ physicalLocation: { artifactLocation: { uri: .host }}}]}] }] }' nuclei-results/nuclei.log > nuclei-results/nuclei.sarif
+
+      - name: Upload Nuclei Logs
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei.log
-          path: nuclei.log
+          name: nuclei-logs
+          path: nuclei-results/nuclei.log
 
-      - name: GitHub Security Dashboard Alerts update
+      - name: Upload SARIF Report
         uses: github/codeql-action/upload-sarif@v3
-        if: steps.nuclei_scan.outputs.sarif_exists == 'true'
         with:
-          sarif_file: nuclei.sarif
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          sarif_file: nuclei-results/nuclei.sarif
