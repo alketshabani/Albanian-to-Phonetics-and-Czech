@@ -15,8 +15,8 @@ jobs:
         run: |
           mkdir -p ~/.nuclei-templates
           git clone --depth 1 https://github.com/projectdiscovery/nuclei-templates ~/.nuclei-templates
-          git clone --depth 1 https://github.com/1ndianl33t/Nuclei-Templates ~/.nuclei-templates/custom-1ndianl33t
           git clone --depth 1 https://github.com/optiv/nuclei-templates ~/.nuclei-templates/custom-optiv
+          git clone --depth 1 https://github.com/h0nus/Nuclei-Templates ~/.nuclei-templates/custom-h0nus
 
       - name: Nuclei - Vulnerability Scan
         id: nuclei_scan
