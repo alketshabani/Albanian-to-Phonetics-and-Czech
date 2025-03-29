@@ -11,30 +11,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Nuclei
+      - name: Download Nuclei Templates
         run: |
-          curl -fsSL https://install-projectdiscovery.io/nuclei | bash
-          nuclei -version
-          mkdir -p nuclei-results
+          mkdir -p ~/.nuclei-templates
+          git clone --depth 1 https://github.com/projectdiscovery/nuclei-templates ~/.nuclei-templates
+          git clone --depth 1 https://github.com/1ndianl33t/Nuclei-Templates ~/.nuclei-templates/custom-1ndianl33t
+          git clone --depth 1 https://github.com/optiv/nuclei-templates ~/.nuclei-templates/custom-optiv
 
-      - name: Run Nuclei Scan
-        run: |
-          nuclei -u https://juice-shop.herokuapp.com \
-            -t ~/.nuclei-templates \
-            -o nuclei-results/nuclei.log \
-            -json
+      - name: Nuclei - Vulnerability Scan
+        id: nuclei_scan
+        uses: projectdiscovery/nuclei-action@main
+        with:
+          target: https://juice-shop.herokuapp.com
+          template-path: ~/.nuclei-templates
 
-      - name: Convert JSON to SARIF (if needed)
-        run: |
-          jq '{ version: "2.1.0", runs: [{ tool: { driver: { name: "Nuclei", version: "latest" } }, results: [. | { message: { text: .info }, locations: [{ physicalLocation: { artifactLocation: { uri: .host }}}]}] }] }' nuclei-results/nuclei.log > nuclei-results/nuclei.sarif
-
-      - name: Upload Nuclei Logs
+      - name: GitHub Workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nuclei-logs
-          path: nuclei-results/nuclei.log
+          name: nuclei.log
+          path: nuclei.log
 
-      - name: Upload SARIF Report
+      - name: GitHub Security Dashboard Alerts update
         uses: github/codeql-action/upload-sarif@v3
+        if: steps.nuclei_scan.outputs.sarif_exists == 'true'
         with:
-          sarif_file: nuclei-results/nuclei.sarif
+          sarif_file: nuclei.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
