@@ -1,40 +1,39 @@
-name: Nuclei - Vulnerability Scan
+name: Nuclei Scan with Custom Templates
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
-  workflow_dispatch:  # Allows manual execution
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   nuclei-scan:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+    # Step 1: Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Download Nuclei Templates
-        run: |
-          mkdir -p ~/.nuclei-templates
-          git clone --depth 1 https://github.com/projectdiscovery/nuclei-templates ~/.nuclei-templates
-          git clone --depth 1 https://github.com/optiv/nuclei-templates ~/.nuclei-templates/custom-optiv
-          git clone --depth 1 https://github.com/h0nus/Nuclei-Templates ~/.nuclei-templates/custom-h0nus
+    # Step 2: Clone Optiv's Nuclei Templates Repository
+    - name: Clone Optiv Nuclei Templates
+      run: |
+        git clone https://github.com/optiv/nuclei-templates custom-templates
 
-      - name: Nuclei - Vulnerability Scan
-        id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@main
-        with:
-          target: https://juice-shop.herokuapp.com
-          template-path: ~/.nuclei-templates
+    # Step 3: Run Nuclei with Both Default and Custom Templates
+    - name: Run Nuclei Scan
+      uses: projectdiscovery/nuclei-action@main
+      with:
+        target: targets.txt                  # File containing target URLs
+        templates: |
+          /home/runner/nuclei-templates/     # Default ProjectDiscovery templates
+          custom-templates/                  # Custom Optiv templates
+        severity: critical,high              # Filter by severity (optional)
+        json-export: nuclei-results.json     # Export results to JSON (optional)
 
-      - name: GitHub Workflow artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nuclei.log
-          path: nuclei.log
-
-      - name: GitHub Security Dashboard Alerts update
-        uses: github/codeql-action/upload-sarif@v3
-        if: steps.nuclei_scan.outputs.sarif_exists == 'true'
-        with:
-          sarif_file: nuclei.sarif
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Step 4 (Optional): Upload Results as an Artifact
+    - name: Upload Scan Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: nuclei-results
+        path: nuclei-results.json
