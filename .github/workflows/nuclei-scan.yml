@@ -1,4 +1,4 @@
-name: Nuclei Scan with Custom Templates
+name: Nuclei Scan with Artifact Upload
 
 on:
   push:
@@ -20,20 +20,18 @@ jobs:
       run: |
         git clone https://github.com/optiv/nuclei-templates custom-templates
 
-    # Step 3: Run Nuclei with Both Default and Custom Templates
+    # Step 3: Run Nuclei Scan
     - name: Run Nuclei Scan
       uses: projectdiscovery/nuclei-action@main
       with:
         target: targets.txt                  # File containing target URLs
-        templates: |
-          /home/runner/nuclei-templates/     # Default ProjectDiscovery templates
-          custom-templates/                  # Custom Optiv templates
+        templates: custom-templates/         # Path to cloned custom templates
         severity: critical,high              # Filter by severity (optional)
-        json-export: nuclei-results.json     # Export results to JSON (optional)
+        json-export: nuclei-results.json     # Export results to JSON
 
-    # Step 4 (Optional): Upload Results as an Artifact
+    # Step 4: Upload Scan Results as an Artifact
     - name: Upload Scan Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4       # Updated version of upload-artifact action
       with:
-        name: nuclei-results
-        path: nuclei-results.json
+        name: nuclei-results                 # Name of the artifact
+        path: nuclei-results.json            # Path to the file or directory to upload
