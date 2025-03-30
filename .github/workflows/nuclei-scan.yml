@@ -1,4 +1,4 @@
-name: Nuclei Scan with Multiple Template Sources
+name: Nuclei Scan
 
 on:
   push:
@@ -15,30 +15,34 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Clone Private Nuclei Templates Repository
+    # Step 2: Clone Private Nuclei Templates
     - name: Clone Private Nuclei Templates
-      run: |
-        git clone https://github.com/Akokonunes/Private-Nuclei-Templates private-templates
+      run: git clone https://github.com/Akokonunes/Private-Nuclei-Templates private-templates
 
-    # Step 3: Clone ProjectDiscovery Nuclei Templates Repository
+    # Step 3: Clone ProjectDiscovery Nuclei Templates
     - name: Clone ProjectDiscovery Nuclei Templates
-      run: |
-        git clone https://github.com/projectdiscovery/nuclei-templates default-templates
+      run: git clone https://github.com/projectdiscovery/nuclei-templates default-templates
 
-    # Step 4: Run Nuclei Scan with Both Template Sources
+    # Step 4: Verify Templates Exist
+    - name: Check Template Directories
+      run: |
+        ls -l private-templates/
+        ls -l default-templates/
+
+    # Step 5: Run Nuclei Scan
     - name: Run Nuclei Scan
       uses: projectdiscovery/nuclei-action@main
       with:
-        target: targets.txt                  # File containing target URLs
+        target: .github/workflows/targets.txt  # Path to targets.txt in the same directory as the YAML file
         templates: |
-          private-templates/                 # Path to Private Nuclei Templates
-          default-templates/                 # Path to ProjectDiscovery Nuclei Templates
-        severity: critical,high              # Filter by severity (optional)
-        json-export: nuclei-results.json     # Export results to JSON
+          private-templates/
+          default-templates/
+        severity: critical,high                # Filter by severity (optional)
+        json-export: nuclei-results.json       # Export results to JSON
 
-    # Step 5 (Optional): Upload Scan Results as an Artifact
+    # Step 6 (Optional): Upload Scan Results as Artifact
     - name: Upload Scan Results
-      uses: actions/upload-artifact@v4       # Updated version of upload-artifact action
+      uses: actions/upload-artifact@v4
       with:
-        name: nuclei-results                 # Name of the artifact
-        path: nuclei-results.json            # Path to the file or directory to upload
+        name: nuclei-results
+        path: nuclei-results.json
