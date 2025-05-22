@@ -1,0 +1,44 @@
+name: WPScan for Wordpress version detection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  wpscan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby (for WPScan)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1
+
+      - name: Install WPScan
+        run: gem install wpscan
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run WPScan for each URL in file and collect results
+        run: |
+          > wpscan-results.json
+          while IFS= read -r url; do
+            echo "Scanning $url"
+            wpscan --url "$url" --format json > tmp.json
+            cat tmp.json | jq . >> wpscan-results.json
+          done < live_only.txt
+      - name: Set date variable
+        run: echo "DATE=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_ENV
+
+
+      - name: Commit results
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add wpscan-results.json
+          git commit -m "Update WPScan results on $DATE [skip ci]" || echo "No changes to commit"
+          git push
+        env:
+          DATE: ${{ env.DATE }}
